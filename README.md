@@ -36,7 +36,7 @@
 <h3 align="center">Teller</h3>
 
   <p align="center">
-    project_description
+    Building webhook providers, and telling everybody
     <br />
     <a href="https://github.com/github_username/repo_name"><strong>Explore the docs »</strong></a>
     <br />
