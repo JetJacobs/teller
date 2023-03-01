@@ -10,9 +10,9 @@ export const buildHeaders = (company, url, body, timestamp, secret) => {
 }
 
 /**
- * Express request object gets converted to a string to be signed by olo
+ * Express request object gets converted to a string to be signed
  * @param {*} req
- * @returns {String} formatted string for olo
+ * @returns {String} formatted string
  */
 export const buildStringToSign = (url, body, timestamp) => {
 	const newString = [url, body, timestamp].join('\n')
@@ -21,7 +21,6 @@ export const buildStringToSign = (url, body, timestamp) => {
 
 /**
  * Takes a string and secret to sign with sha256 to base64 hash.
- * This is compatible with olo docs
  * @param {String} string
  * @param {*} secret
  * @returns {String} base64 encoded signature

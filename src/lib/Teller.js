@@ -1,10 +1,10 @@
 import crypto from 'crypto'
 import axios from 'axios'
-import axiosRetry from 'retry-axios'
+import axiosRetry from 'axios-retry'
 import { EventEmitter } from 'events'
 
-import { buildHeaders } from './request-signer.js'
-import MemoryStorageProvider from './lib/providers/memory-storage-provider.js'
+import { buildHeaders } from '../request-signer.js'
+import MemoryStorageProvider from './providers/memory-storage-provider.js'
 
 class Teller {
 	config
