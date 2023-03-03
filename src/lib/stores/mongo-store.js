@@ -87,17 +87,17 @@ class MongooseStorageProvider {
 		return webhooks
 	}
 
-	async getByEvent(eventType) {
-		const webhooks = this.WebhookSubciptions.find({ events: eventType })
-		if (!webhooks.length) return []
-		return webhooks
-	}
-
 	async getByEvents(events) {
-		const webhooks = this.WebhookSubciptions.find({
+		// Ensure that events is an array
+		if (!Array.isArray(events)) events = [events]
+
+		// Query the database for the matching webhooks
+		const webhooks = await this.WebhookSubciptions.find({
 			events: { $in: events },
 		})
+		// If no webhooks were found, return an empty array
 		if (!webhooks.length) return []
+		// Otherwise, return the array of retrieved webhooks
 		return webhooks
 	}
 

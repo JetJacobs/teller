@@ -3,20 +3,20 @@ import axios from 'axios'
 import axiosRetry from 'axios-retry'
 import { EventEmitter } from 'events'
 
-import { buildHeaders } from '../request-signer.js'
-import MemoryStorageProvider from './providers/memory-storage-provider.js'
+import { buildHeaders } from './utils/request-signer.js'
+import { MemoryStore } from './stores/memory-store.js'
 
 class Teller {
-	config
-	db
+	orgName
+	store
 	emitter
 	buildHeaders
 
-	constructor(_config = {}) {
-		this.config = _config
+	constructor(options = {}) {
+		this.orgName = options.orgName || 'teller'
 		this.emitter = new EventEmitter()
-		this.buildHeaders = this.config.buildHeaders || buildHeaders
-		this.db = this.config.storageProvider || new MemoryStorageProvider()
+		this.buildHeaders = options.buildHeaders || buildHeaders
+		this.store = options.storageProvider || new MemoryStore()
 		axiosRetry(axios, {
 			retries: 15,
 			retryDelay: axiosRetry.exponentialDelay,
@@ -30,23 +30,23 @@ class Teller {
 	}
 
 	async getAll() {
-		return this.db.getAll()
+		return this.store.getAll()
 	}
 
 	async getById(webhookId) {
-		const webhook = await this.db.getById(webhookId)
+		const webhook = await this.store.getById(webhookId)
 		if (!webhook) return null
 		return webhook
 	}
 
 	async getByTag(tag) {
-		const webhooks = await this.db.getByTag(tag)
+		const webhooks = await this.store.getByTag(tag)
 		if (!webhooks) return []
 		return webhooks
 	}
 
 	async getByEvents(events) {
-		const webhooks = await this.db.getByEvents(events)
+		const webhooks = await this.store.getByEvents(events)
 		if (!webhooks) return []
 		return webhooks
 	}
@@ -74,17 +74,17 @@ class Teller {
 			created: createdDate.toJSON(),
 			modified: createdDate.toJSON(),
 		}
-		await this.db.add(objectToAdd)
-		return this.db.getById(id)
+		await this.store.add(objectToAdd)
+		return this.store.getById(id)
 	}
 
 	async remove(webhookId) {
-		await this.db.remove(webhookId)
+		await this.store.remove(webhookId)
 		return true
 	}
 
-	async triggerByEvent(eventType, data, options = { tags: [], scopes: [] }) {
-		const webhooks = await this.db.getByQuery(
+	async tell(eventType = '', data = {}, options = { tags: [], scopes: [] }) {
+		const webhooks = await this.store.getByQuery(
 			[eventType],
 			options?.tags,
 			options?.scopes
@@ -137,15 +137,16 @@ class Teller {
 		}
 		const rawBody = JSON.stringify(jsonBody)
 		const options = {
-			body: rawBody,
+			method: 'POST',
+			url: url,
 			headers: this.buildHeaders(
-				config.company,
+				this.orgName,
 				url,
 				rawBody,
 				timestamp,
 				webhookObject?.signatureToken
 			),
-			url: url,
+			body: rawBody,
 		}
 
 		return axios.request(options)

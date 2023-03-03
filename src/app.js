@@ -3,8 +3,8 @@ import axios from 'axios'
 import axiosRetry from 'retry-axios'
 import { EventEmitter } from 'events'
 
-import { buildHeaders } from './request-signer.js'
-import MemoryStorageProvider from './lib/providers/memory-storage-provider.js'
+import { buildHeaders } from './lib/utils/request-signer.js'
+import MemoryStorageProvider from './lib/stores/memory-store.js'
 
 class Teller {
 	config

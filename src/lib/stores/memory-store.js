@@ -17,12 +17,6 @@ class MemoryStorageProvider {
 		return webhooks
 	}
 
-	async getByEvent(eventType) {
-		const webhooks = this.db.filter((e) => e.events.includes(eventType))
-		if (!webhooks.length) return []
-		return webhooks
-	}
-
 	async getByEvents(events) {
 		if (typeof events === 'string') events = [events]
 		this.db.filter((hook) => {
