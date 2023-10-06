@@ -158,14 +158,14 @@ class Teller {
    * webhooks, their IDs, and responses
    */
   async tell(eventType = '', data = {}, options = { tags: [], scopes: [] }) {
-    console.log('tell called')
+    console.log('tell called');
     const webhooks = await this.store.getByQuery(
       [eventType],
       options?.tags,
       options?.scopes,
     );
 
-    console.log('found', webhooks)
+    console.log('found', webhooks);
     if (!webhooks) return null;
 
     const responsePromises = webhooks.map((hook) => this.httpPost(hook, eventType, data)

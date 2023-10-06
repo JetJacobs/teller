@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import express from 'express';
 import bodyParser from 'body-parser';
 import Teller from './lib/Teller.js';
@@ -9,7 +10,6 @@ app.use(
   bodyParser.json({
     limit: '1mb',
     type: 'application/json',
-    // eslint-disable-next-line no-unused-vars
     verify(req, res, buf, encoding) {
       req.rawBody = buf.toString();
     },
@@ -34,6 +34,6 @@ app.listen(3000, () => {
       scopes: [],
       tags: [],
     })
-    .then(()=> teller.tell('test-event', null, {scopes: ['test']}))
+    .then(() => teller.tell('test-event', null, { scopes: ['test'] }))
     .then(() => console.log('teller done'));
 });

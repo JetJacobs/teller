@@ -13,15 +13,7 @@
 	},
 	"rules": {
 		"no-underscore-dangle": ["error", { "allow": ["_id", "__v"] }],
-		"import/extensions": ["error", "ignorePackages", { "*": "never" }],
-		"import/no-extraneous-dependencies": [
-			"error",
-			{
-				"devDependencies": true,
-				"optionalDependencies": true,
-				"peerDependencies": true,
-				"bundledDependencies": true
-			}
-		]
+		"import/extensions": ["off", "ignorePackages", { "*": "always" }],
+		"import/no-extraneous-dependencies": "off"
 	}
 }

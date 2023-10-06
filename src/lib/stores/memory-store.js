@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 class MemoryStorageProvider {
-  db
+  db;
 
   constructor() {
     this.db = [];
@@ -30,12 +30,12 @@ class MemoryStorageProvider {
   }
 
   async getByQuery(events = [], tags = [], scopes = []) {
-    console.log(this.db)
+    console.log(this.db);
     const webhooks = this.db.filter((hook) => {
       const eventMatch = hook.events.some((event) => events.includes(event));
       const scopeMatch = hook.scopes.some((scope) => scopes.includes(scope)) || scopes.length === 0;
       const tagMatch = hook.tags.every((tag) => tags.includes(tag));
-      console.log(eventMatch, scopeMatch, tagMatch)
+      console.log(eventMatch, scopeMatch, tagMatch);
       return eventMatch && tagMatch && scopeMatch;
     });
     if (!webhooks.length) return [];
