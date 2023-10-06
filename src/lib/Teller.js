@@ -3,8 +3,17 @@ import axios from 'axios';
 import axiosRetry from 'axios-retry';
 import { EventEmitter } from 'events';
 
-import MemoryStore from './stores/memory-store';
-import { buildHeaders } from './utils/request-signer';
+import MemoryStore from './stores/memory-store.js';
+import { buildHeaders } from './utils/request-signer.js';
+
+/**
+ * Generates an authentication token
+ * @returns {string} - Authentication token
+ */
+function generateAuthToken() {
+  const randomVal = crypto.randomUUID();
+  return crypto.createHash('sha1').update(randomVal).digest('hex');
+}
 
 /**
  * Teller class for managing and triggering webhooks
@@ -120,7 +129,7 @@ class Teller {
       url: hook?.url,
       events: hook?.events,
       scopes: hook?.scopes,
-      signatureToken: this.generateAuthToken(),
+      signatureToken: generateAuthToken(),
       created: createdDate.getTime(),
       modified: createdDate.getTime(),
     };
@@ -149,12 +158,14 @@ class Teller {
    * webhooks, their IDs, and responses
    */
   async tell(eventType = '', data = {}, options = { tags: [], scopes: [] }) {
+    console.log('tell called')
     const webhooks = await this.store.getByQuery(
       [eventType],
       options?.tags,
       options?.scopes,
     );
 
+    console.log('found', webhooks)
     if (!webhooks) return null;
 
     const responsePromises = webhooks.map((hook) => this.httpPost(hook, eventType, data)
@@ -182,15 +193,6 @@ class Teller {
       webhookIds: webhooks.map((e) => e.id),
       responses,
     };
-  }
-
-  /**
-   * Generates an authentication token
-   * @returns {string} - Authentication token
-   */
-  static generateAuthToken() {
-    const randomVal = crypto.randomUUID();
-    return crypto.createHash('sha1').update(randomVal).digest('hex');
   }
 
   /**

@@ -3,6 +3,7 @@
 	"version": "1.0.0",
 	"description": "Simple webhook implementation",
 	"main": "index.js",
+	"type": "module",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
@@ -16,6 +17,7 @@
 		"mongoose": "^6.8.2"
 	},
 	"devDependencies": {
+		"body-parser": "^1.20.2",
 		"eslint": "^8.39.0",
 		"eslint-config-airbnb-base": "^15.0.0",
 		"eslint-plugin-import": "^2.27.5",

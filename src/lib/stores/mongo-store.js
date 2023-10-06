@@ -4,11 +4,11 @@ import mongoose from 'mongoose';
 class MongooseStore {
   mongoose;
 
-  WebhookSubciptions;
+  WebhookSubscriptions;
 
-  async initialize(mongooseConnect) {
+  async initialize(mongooseConnectionUri) {
     mongoose.connect(
-      mongooseConnect,
+      mongooseConnectionUri,
       { useNewUrlParser: true, useUnifiedTopology: true },
       (err) => {
         if (err) throw err;
@@ -21,7 +21,7 @@ class MongooseStore {
       },
       {
         _id: false,
-        collection: 'report',
+        collection: 'urls',
         toObject: {
           transform(doc, ret) {
             delete ret._id;
@@ -49,6 +49,7 @@ class MongooseStore {
       },
       {
         collection: 'webhook-subscriptions',
+        timestamps: true,
         toObject: {
           transform(doc, ret) {
             delete ret._id;
@@ -64,11 +65,11 @@ class MongooseStore {
       },
     );
 
-    this.WebhookSubciptions = mongoose.model(
+    this.WebhookSubscriptions = mongoose.model(
       'webhookSubscriptions',
       webhookSubscriptionsSchema,
     );
-    this.WebhookSubciptions.createIndexes({ id: 1 });
+    this.WebhookSubscriptions.createIndexes({ id: 1 });
   }
 
   async getAll() {
@@ -76,13 +77,13 @@ class MongooseStore {
   }
 
   async getById(webhookId) {
-    const webhook = await this.WebhookSubciptions.find({ id: webhookId });
+    const webhook = await this.WebhookSubscriptions.find({ id: webhookId });
     if (!webhook) return null;
     return webhook;
   }
 
   async getByTag(tag) {
-    const webhooks = this.WebhookSubciptions.find({ tags: tag });
+    const webhooks = this.WebhookSubscriptions.find({ tags: tag });
     if (!webhooks.length) return [];
     return webhooks;
   }
@@ -92,7 +93,7 @@ class MongooseStore {
     if (!Array.isArray(events)) events = [events];
 
     // Query the database for the matching webhooks
-    const webhooks = await this.WebhookSubciptions.find({
+    const webhooks = await this.WebhookSubscriptions.find({
       events: { $in: events },
     });
     // If no webhooks were found, return an empty array
@@ -107,23 +108,18 @@ class MongooseStore {
       ...(scopes.length > 0 && { scopes: { $in: scopes } }),
       ...(tags.length > 0 && { tags: { $all: tags } }),
     };
-    const webhooks = await this.WebhookSubciptions.find(query);
+    const webhooks = await this.WebhookSubscriptions.find(query);
     if (!webhooks.length) return [];
     return webhooks;
   }
 
   async add(webhook) {
-    const newHook = await this.WebhookSubciptions.create(webhook);
-    await newHook.save();
-    if (!newHook) throw new Error('Error adding object to mongo database');
-    return newHook;
+    return this.WebhookSubscriptions.create(webhook);
   }
 
   async remove(webhookId) {
-    const deletedHook = await this.WebhookSubciptions.deleteOne({
-      id: webhookId,
-    });
-    if (!deletedHook) { throw new Error(`Unable to find webhook with id ${webhookId}`); }
+    const result = await this.WebhookSubscriptions.deleteOne({ id: webhookId });
+    if (result.deletedCount === 0) throw new Error(`Unable to find webhook with id ${webhookId}`);
     return true;
   }
 }
