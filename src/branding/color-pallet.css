@@ -1,0 +1,24 @@
+:root {
+	/* Primary brand colors */
+	--blue: #2c3e50;
+
+	/* Accent colors */
+	--red: #e74c3c; /* Use for calls to action and important elements */
+	--green: #2ecc71; /* Use for secondary calls to action and other important elements */
+
+	/* Analogous colors */
+	--dark-blue: #34495e;
+	--light-gray: #95a5a6;
+
+	/* Grayscale */
+	--black: #000000;
+	--dark-gray: #4a4a4a;
+	--medium-gray: #9b9b9b;
+	--light-gray: #f8f8f8;
+	--white: #ffffff;
+
+	/* Hooked */
+	--hooked-blue: #007fff;
+	--grey: #333333;
+	--white: #ffffff;
+}

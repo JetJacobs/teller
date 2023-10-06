@@ -1,131 +1,131 @@
-import mongoose from 'mongoose'
+/* eslint-disable no-param-reassign */
+import mongoose from 'mongoose';
 
-class MongooseStorageProvider {
-	mongoose
-	WebhookSubciptions
+class MongooseStore {
+  mongoose;
 
-	constructor() {}
+  WebhookSubciptions;
 
-	async initialize(mongooseConnect) {
-		mongoose.connect(
-			mongooseConnect,
-			{ useNewUrlParser: true, useUnifiedTopology: true },
-			function (err) {
-				if (err) throw err
-			}
-		)
-		const urlSchema = Mongoose.Schema(
-			{
-				base: { type: String, required: true },
-				relativeUri: { type: String, required: true },
-			},
-			{
-				_id: false,
-				collection: 'report',
-				toObject: {
-					transform: function (doc, ret) {
-						delete ret._id
-						delete ret.__v
-					},
-				},
-				toJSON: {
-					transform: function (doc, ret) {
-						delete ret._id
-						delete ret.__v
-					},
-				},
-			}
-		)
-		const webhookSubscriptionsSchema = mongoose.Schema(
-			{
-				id: { type: String, required: true },
-				url: { type: urlSchema, required: true },
-				events: { type: [String], required: true },
-				tags: { type: [String], required: true, default: [] },
-				scopes: { type: [String], required: true, default: [] },
-				signatureToken: { type: String, required: true },
-				created: { type: String },
-				modified: { type: String },
-			},
-			{
-				collection: 'webhook-subscriptions',
-				toObject: {
-					transform: function (doc, ret) {
-						delete ret._id
-						delete ret.__v
-					},
-				},
-				toJSON: {
-					transform: function (doc, ret) {
-						delete ret._id
-						delete ret.__v
-					},
-				},
-			}
-		)
+  async initialize(mongooseConnect) {
+    mongoose.connect(
+      mongooseConnect,
+      { useNewUrlParser: true, useUnifiedTopology: true },
+      (err) => {
+        if (err) throw err;
+      },
+    );
+    const urlSchema = mongoose.Schema(
+      {
+        base: { type: String, required: true },
+        relativeUri: { type: String, required: true },
+      },
+      {
+        _id: false,
+        collection: 'report',
+        toObject: {
+          transform(doc, ret) {
+            delete ret._id;
+            delete ret.__v;
+          },
+        },
+        toJSON: {
+          transform(doc, ret) {
+            delete ret._id;
+            delete ret.__v;
+          },
+        },
+      },
+    );
+    const webhookSubscriptionsSchema = mongoose.Schema(
+      {
+        id: { type: String, required: true },
+        url: { type: urlSchema, required: true },
+        events: { type: [String], required: true },
+        tags: { type: [String], required: true, default: [] },
+        scopes: { type: [String], required: true, default: [] },
+        signatureToken: { type: String, required: true },
+        created: { type: Number },
+        modified: { type: Number },
+      },
+      {
+        collection: 'webhook-subscriptions',
+        toObject: {
+          transform(doc, ret) {
+            delete ret._id;
+            delete ret.__v;
+          },
+        },
+        toJSON: {
+          transform(doc, ret) {
+            delete ret._id;
+            delete ret.__v;
+          },
+        },
+      },
+    );
 
-		this.WebhookSubciptions = mongoose.model(
-			'webhookSubscriptions',
-			webhookSubscriptionsSchema
-		)
-		this.WebhookSubciptions.createIndexes({ id: 1 })
-	}
+    this.WebhookSubciptions = mongoose.model(
+      'webhookSubscriptions',
+      webhookSubscriptionsSchema,
+    );
+    this.WebhookSubciptions.createIndexes({ id: 1 });
+  }
 
-	async getAll() {
-		return await this.WebhookSubciptions.find({})
-	}
+  async getAll() {
+    this.getByQuery();
+  }
 
-	async getById(webhookId) {
-		const webhook = await this.WebhookSubciptions.find({ id: webhookId })
-		if (!webhook) return null
-		return webhook
-	}
+  async getById(webhookId) {
+    const webhook = await this.WebhookSubciptions.find({ id: webhookId });
+    if (!webhook) return null;
+    return webhook;
+  }
 
-	async getByTag(tag) {
-		const webhooks = this.WebhookSubciptions.find({ tags: tag })
-		if (!webhooks.length) return []
-		return webhooks
-	}
+  async getByTag(tag) {
+    const webhooks = this.WebhookSubciptions.find({ tags: tag });
+    if (!webhooks.length) return [];
+    return webhooks;
+  }
 
-	async getByEvents(events) {
-		// Ensure that events is an array
-		if (!Array.isArray(events)) events = [events]
+  async getByEvents(events) {
+    // Ensure that events is an array
+    if (!Array.isArray(events)) events = [events];
 
-		// Query the database for the matching webhooks
-		const webhooks = await this.WebhookSubciptions.find({
-			events: { $in: events },
-		})
-		// If no webhooks were found, return an empty array
-		if (!webhooks.length) return []
-		// Otherwise, return the array of retrieved webhooks
-		return webhooks
-	}
+    // Query the database for the matching webhooks
+    const webhooks = await this.WebhookSubciptions.find({
+      events: { $in: events },
+    });
+    // If no webhooks were found, return an empty array
+    if (!webhooks.length) return [];
+    // Otherwise, return the array of retrieved webhooks
+    return webhooks;
+  }
 
-	async getByQuery(events = [], tags = [], scopes = []) {
-		const webhooks = this.WebhookSubciptions.find({
-			events: { $in: events },
-			scopes: { $in: scopes },
-			tags: { $all: tags },
-		})
-		if (!webhooks.length) return []
-		return webhooks
-	}
+  async getByQuery({ events = [], tags = [], scopes = [] }) {
+    const query = {
+      ...(events.length > 0 && { events: { $in: events } }),
+      ...(scopes.length > 0 && { scopes: { $in: scopes } }),
+      ...(tags.length > 0 && { tags: { $all: tags } }),
+    };
+    const webhooks = await this.WebhookSubciptions.find(query);
+    if (!webhooks.length) return [];
+    return webhooks;
+  }
 
-	async add(webhook) {
-		const newHook = await this.WebhookSubciptions.create(webhook)
-		await newHook.save()
-		if (!newHook) throw new Error('Error adding object to mongo database')
-		return newHook
-	}
+  async add(webhook) {
+    const newHook = await this.WebhookSubciptions.create(webhook);
+    await newHook.save();
+    if (!newHook) throw new Error('Error adding object to mongo database');
+    return newHook;
+  }
 
-	async remove(webhookId) {
-		const deletedHook = await this.WebhookSubciptions.deleteOne({
-			id: webhookId,
-		})
-		if (!deletedHook)
-			throw new Error(`Unable to find webhook with id ${webhookId}`)
-		return true
-	}
+  async remove(webhookId) {
+    const deletedHook = await this.WebhookSubciptions.deleteOne({
+      id: webhookId,
+    });
+    if (!deletedHook) { throw new Error(`Unable to find webhook with id ${webhookId}`); }
+    return true;
+  }
 }
 
-export default MongooseStorageProvider
+export default MongooseStore;

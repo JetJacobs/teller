@@ -1,15 +1,22 @@
+import { CustomError } from '../utils/errors';
+
 export const isValidProvider = (obj) => {
-	const required = [{ name: '', type: '' }]
-	const errors = []
-	for(let i = 0; i < required.length; i++){
-		const requiredField = required[i]
-		if (obj.hasOwnProperty(requiredField.name))
-			throw `Missing field ${requiredField.name}`
-		if (typeof obj[requiredField.name] !== type)
-			throw `Field ${requiredField.name} expected type ${
-					requiredField.type
-				} got ${typeof obj[requiredField.name]}`,
-			
-	}
-	return true
-}
+  const required = [
+    { name: 'getById', type: 'function' },
+    { name: 'getByQuery', type: 'function' },
+  ];
+
+  for (let i = 0; i < required.length; i += 1) {
+    const requiredField = required[i];
+    if (obj[requiredField?.name]) { throw new CustomError(`Missing field ${requiredField.name}`); }
+    const fieldType = typeof obj[requiredField.name];
+    if (fieldType !== requiredField?.type) {
+      throw new CustomError(`Field ${requiredField.name} expected type ${
+        requiredField?.type
+      } got ${typeof obj[requiredField?.name]}`);
+    }
+  }
+  return true;
+};
+
+export default isValidProvider;
